@@ -13,7 +13,7 @@ In their existing market, the sales team has classified all customers into 4 seg
 You are required to help the manager to predict the right group of the new customers.
 
 ## Neural Network Model
-<img src="image.png" width=400 height=300>
+![308633715-c1dedc46-768e-44a7-9e61-38b1e2663904](https://github.com/user-attachments/assets/ea4ca4c4-ec38-4370-be54-3d2e9737c45d)
 
 ## DESIGN STEPS
 
@@ -28,10 +28,9 @@ Plot the Training Loss, Validation Loss Vs Iteration Plot.
 
 ## PROGRAM
 
-### Name: SABARI AKASH A
-### Register Number: 212222230124
-
-```python
+### Name: Praveen.v
+### Register Number: 212222233004
+```
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Sequential
@@ -47,231 +46,136 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import OrdinalEncoder
-from sklearn.metrics import classification_report,confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, confusion_matrix
 import numpy as np
 import matplotlib.pylab as plt
 
 customer_df = pd.read_csv('customers.csv')
-customer_df.head()
-
-## Data Exploration
-
 customer_df.columns
-
 customer_df.dtypes
-
 customer_df.shape
-
 customer_df.isnull().sum()
-
-customer_df_cleaned = customer_df.dropna(axis=0)
-
+customer_df_cleaned = customer_df.dropna(axis = 0)
 customer_df_cleaned.isnull().sum()
-
 customer_df_cleaned.shape
-
 customer_df_cleaned.dtypes
-
 customer_df_cleaned['Gender'].unique()
-
 customer_df_cleaned['Ever_Married'].unique()
-
 customer_df_cleaned['Graduated'].unique()
-
 customer_df_cleaned['Profession'].unique()
-
 customer_df_cleaned['Spending_Score'].unique()
-
 customer_df_cleaned['Var_1'].unique()
-
 customer_df_cleaned['Segmentation'].unique()
 
-categories_list=[['Male', 'Female'],
-           ['No', 'Yes'],
-           ['No', 'Yes'],
-           ['Healthcare', 'Engineer', 'Lawyer', 'Artist', 'Doctor',
-            'Homemaker', 'Entertainment', 'Marketing', 'Executive'],
-           ['Low', 'Average', 'High']
-           ]
-enc = OrdinalEncoder(categories=categories_list)
+categories_list = [['Male', 'Female'],
+                   ['No', 'Yes'],
+                   ['No', 'Yes'],
+                   ['Healthcare', 'Engineer', 'Lawyer', 'Artist', 'Doctor', 'Homemaker', 'Entertainment', 'Marketing', 'Executive'],
+                   ['Low', 'Average', 'High']]
+enc = OrdinalEncoder(categories = categories_list)
 
 customers_1 = customer_df_cleaned.copy()
-
-customers_1[['Gender',
-             'Ever_Married',
-              'Graduated','Profession',
-              'Spending_Score']] = enc.fit_transform(customers_1[['Gender',
-                                                                 'Ever_Married',
-                                                                 'Graduated','Profession',
-                                                                 'Spending_Score']])
-
+customers_1[['Gender', 'Ever_Married', 'Graduated', 'Profession', 'Spending_Score']] = enc.fit_transform(customers_1[['Gender', 'Ever_Married', 'Graduated', 'Profession', 'Spending_Score']])
 customers_1.dtypes
-
 le = LabelEncoder()
-
 customers_1['Segmentation'] = le.fit_transform(customers_1['Segmentation'])
-
 customers_1.dtypes
-
 customers_1 = customers_1.drop('ID',axis=1)
 customers_1 = customers_1.drop('Var_1',axis=1)
-
 customers_1.dtypes
 
-# Calculate the correlation matrix
 corr = customers_1.corr()
-
-# Plot the heatmap
 sns.heatmap(corr,
         xticklabels=corr.columns,
         yticklabels=corr.columns,
         cmap="BuPu",
         annot= True)
-print('Sabari Akash')
-
 sns.pairplot(customers_1)
-
 sns.distplot(customers_1['Age'])
-
 plt.figure(figsize=(10,6))
 sns.countplot(customers_1['Family_Size'])
-
 plt.figure(figsize=(10,6))
 sns.boxplot(x='Family_Size',y='Age',data=customers_1)
-
 plt.figure(figsize=(10,6))
 sns.scatterplot(x='Family_Size',y='Spending_Score',data=customers_1)
-
 plt.figure(figsize=(10,6))
 sns.scatterplot(x='Family_Size',y='Age',data=customers_1)
 
 customers_1.describe()
-
 customers_1['Segmentation'].unique()
-
-X=customers_1[['Gender','Ever_Married','Age','Graduated','Profession','Work_Experience','Spending_Score','Family_Size']].values
-
+X=customers_1[['Gender','Ever_Married','Age','Graduated','Profession','Work_Experience','Spending_Score','Family_Size']]
 y1 = customers_1[['Segmentation']].values
-
 one_hot_enc = OneHotEncoder()
-
 one_hot_enc.fit(y1)
-
 y1.shape
-
 y = one_hot_enc.transform(y1).toarray()
-
 y.shape
-
 y1[0]
-
 y[0]
-
 X.shape
-
-X_train,X_test,y_train,y_test=train_test_split(X,y,
-                                               test_size=0.33,
-                                               random_state=50)
-
-X_train[0]
-
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.33, random_state = 50)
+X_train.index
 X_train.shape
-
 scaler_age = MinMaxScaler()
-
-scaler_age.fit(X_train[:,2].reshape(-1,1))
-
+y1
+scaler_age.fit(X_train.iloc[:, 2].values.reshape(-1,1))
 X_train_scaled = np.copy(X_train)
 X_test_scaled = np.copy(X_test)
+X_train_scaled[:,2] = scaler_age.transform(X_train.iloc[:,2].values.reshape(-1,1)).reshape(-1)
+X_test_scaled[:,2] = scaler_age.transform(X_test.iloc[:,2].values.reshape(-1,1)).reshape(-1)
 
-# To scale the Age column
-X_train_scaled[:,2] = scaler_age.transform(X_train[:,2].reshape(-1,1)).reshape(-1)
-X_test_scaled[:,2] = scaler_age.transform(X_test[:,2].reshape(-1,1)).reshape(-1)
+from tensorflow.keras.callbacks import EarlyStopping
 
-Name: Sabari Akash A
-
-Register Number: 212222230124
-
-# Creating the model
-model=Sequential([Dense(6,activation='relu',input_shape=[8]),Dense(10,activation='relu'),
-                  Dense(10,activation='relu'),Dense(4,activation='softmax')])
-
-ai_brain.compile(optimizer='adam',
-                 loss='categorical_crossentropy', # choose your loss function,
-                 metrics=['accuracy'])
-
-#early_stop = EarlyStopping(monitor='val_loss', patience=2)
+ai_brain = Sequential()
+X_train.shape[1]
+X_train_scaled.shape
+ai_brain.add(Dense(5, activation = "relu", input_shape = (X_train.shape[1],)))
+ai_brain.add(Dense(10, activation = "relu"))
+ai_brain.add(Dense(10, activation = "relu"))
+ai_brain.add(Dense(4, activation = "softmax"))
+ai_brain.summary()
+ai_brain.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics=['accuracy'])
 early_stop = EarlyStopping(monitor='val_loss', patience=2)
-
-ai_brain.fit(x=X_train_scaled,y=y_train,
-             epochs=2000,
-             batch_size=256,
-             validation_data=(X_test_scaled,y_test),
-             )
-
+ai_brain.fit(x = X_train_scaled, y = y_train, epochs = 2000, batch_size = 32, validation_data = (X_test_scaled, y_test),)
 metrics = pd.DataFrame(ai_brain.history.history)
-
 metrics.head()
-
 metrics[['loss','val_loss']].plot()
-print('Sabari Akash')
-
 x_test_predictions = np.argmax(ai_brain.predict(X_test_scaled), axis=1)
-
 x_test_predictions.shape
-
 y_test_truevalue = np.argmax(y_test,axis=1)
-
 y_test_truevalue.shape
-
 print(confusion_matrix(y_test_truevalue,x_test_predictions))
-print('\n Sabari Akash')
-
 print(classification_report(y_test_truevalue,x_test_predictions))
-print('\t Sabari Akash')
-
-# Saving the Model
 ai_brain.save('customer_classification_model.h5')
-
-# Saving the data
 with open('customer_data.pickle', 'wb') as fh:
    pickle.dump([X_train_scaled,y_train,X_test_scaled,y_test,customers_1,customer_df_cleaned,scaler_age,enc,one_hot_enc,le], fh)
-
-# Loading the Model
 ai_brain = load_model('customer_classification_model.h5')
-
-# Loading the data
 with open('customer_data.pickle', 'rb') as fh:
    [X_train_scaled,y_train,X_test_scaled,y_test,customers_1,customer_df_cleaned,scaler_age,enc,one_hot_enc,le]=pickle.load(fh)
 
-# Prediction for a single input
-
 x_single_prediction = np.argmax(ai_brain.predict(X_test_scaled[1:2,:]), axis=1)
-
 print(x_single_prediction)
-print('Sabari Akash')
-
 print(le.inverse_transform(x_single_prediction))
-print('Sabari Akash')
 ```
-
 ## Dataset Information
+![365037445-da08c9a5-d6dc-45e2-a50b-37c6a6521e32](https://github.com/user-attachments/assets/4303056b-bbed-46c4-ad4c-c0f6bf34a5e5)
 
-<img src=image-1.png width=500 height=100>
 
 ## OUTPUT
 ### Training Loss, Validation Loss Vs Iteration Plot
-<img src=image-2.png width= 300 height=200>
+
+![365037476-a92e2f87-8d1a-4885-b1dc-150006646d85](https://github.com/user-attachments/assets/92f7da42-cfa0-47a0-8f5e-e5e50b82759a)
 
 ### Classification Report
-<img src=image-3.png width=120 height=80>
+![365037512-7c901ee3-16fd-4aa0-903d-b8dde135bfca](https://github.com/user-attachments/assets/92ff3ad8-949d-48f7-8ed3-4871738c99eb)
 
 ### Confusion Matrix
-<img src= image-4.png width=200 height=120>
+![365037532-eab25af2-c165-40f6-90b7-23bc70d7623c](https://github.com/user-attachments/assets/b9062acd-e904-45d9-a00d-d2f93f1cddef)
 
 ### New Sample Data Prediction 
+![365037562-5341de92-68f6-4016-95cb-8c816f504d89](https://github.com/user-attachments/assets/05fe3629-0f44-4bba-aa68-258a5040297b)
 
-<img src="image-5.png" width=100> <img src="image-6.png" width=100>
 
 ## RESULT
 A neural network classification model for the given dataset is successfully developed. 
